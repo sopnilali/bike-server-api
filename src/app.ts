@@ -6,7 +6,14 @@ import errorHandler from './middlewares/errorHandler';
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000'
+    ].filter(Boolean),
+    credentials: true,
+  }),
+);
 app.use(express.json());
 
 app.get('/', (_req, res) => {
