@@ -1,0 +1,134 @@
+{
+  "info": {
+    "name": "Bike Servicing Management API",
+    "_postman_id": "bike-servicing-api-assignment-8",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "customerId",
+      "value": ""
+    },
+    {
+      "key": "bikeId",
+      "value": ""
+    },
+    {
+      "key": "serviceId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Create customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rahim Uddin\",\n  \"email\": \"rahim@example.com\",\n  \"phone\": \"01700000000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all customers",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers" }
+        },
+        {
+          "name": "Get customer by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers/{{customerId}}" }
+        },
+        {
+          "name": "Update customer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/customers/{{customerId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"01999999999\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete customer",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/customers/{{customerId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Bikes",
+      "item": [
+        {
+          "name": "Create bike",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/bikes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"Yamaha\",\n  \"model\": \"FZ-S\",\n  \"year\": 2022,\n  \"customerId\": \"{{customerId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all bikes",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/bikes" }
+        },
+        {
+          "name": "Get bike by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/bikes/{{bikeId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Create service",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/services",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bikeId\": \"{{bikeId}}\",\n  \"serviceDate\": \"2025-01-10T10:00:00.000Z\",\n  \"description\": \"Engine oil change\",\n  \"status\": \"pending\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all services",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/services" }
+        },
+        {
+          "name": "Get overdue services",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/services/status" }
+        },
+        {
+          "name": "Get service by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/services/{{serviceId}}" }
+        },
+        {
+          "name": "Complete service",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/services/{{serviceId}}/complete",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completionDate\": \"2025-02-01T10:00:00.000Z\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
