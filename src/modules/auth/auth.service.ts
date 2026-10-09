@@ -10,6 +10,7 @@ import {
   UpdateProfileInput,
   ChangePasswordInput,
   ResetPasswordInput,
+  CreateUserInput,
 } from './auth.validation';
 
 const RESET_TOKEN_BYTES = 32;
@@ -21,6 +22,7 @@ const publicSelect = {
   name: true,
   email: true,
   phone: true,
+  role: true,
   profileImage: true,
   createdAt: true,
   updatedAt: true,
@@ -32,11 +34,16 @@ export const signup = async (data: SignupInput) => {
     throw new AppError(409, 'Email already exists');
   }
   const password = await hashPassword(data.password);
+  // Public signup is always customer, even if a role is sent.
   const customer = await prisma.customer.create({
-    data: { name: data.name, email: data.email, phone: data.phone, password },
+    data: { name: data.name, email: data.email, phone: data.phone, password, role: 'customer' },
     select: publicSelect,
   });
-  const token = signAuthToken({ customerId: customer.customerId, email: customer.email });
+  const token = signAuthToken({
+    customerId: customer.customerId,
+    email: customer.email,
+    role: customer.role,
+  });
   return { customer, token };
 };
 
@@ -49,9 +56,39 @@ export const login = async (data: LoginInput) => {
   if (!ok) {
     throw new AppError(401, 'Invalid email or password');
   }
-  const token = signAuthToken({ customerId: customer.customerId, email: customer.email });
+  const token = signAuthToken({
+    customerId: customer.customerId,
+    email: customer.email,
+    role: customer.role,
+  });
   const { password: _pw, passwordResetToken: _t, passwordResetExpires: _e, ...safe } = customer;
   return { customer: safe, token };
+};
+
+/** Admin-only: create a user with any role (customer/staff/admin). */
+export const createUser = async (data: CreateUserInput) => {
+  const existing = await prisma.customer.findUnique({ where: { email: data.email } });
+  if (existing) {
+    throw new AppError(409, 'Email already exists');
+  }
+  const password = await hashPassword(data.password);
+  return prisma.customer.create({
+    data: { name: data.name, email: data.email, phone: data.phone, password, role: data.role },
+    select: publicSelect,
+  });
+};
+
+/** Admin-only: change a user's role. */
+export const updateRole = async (customerId: string, role: 'customer' | 'staff' | 'admin') => {
+  const existing = await prisma.customer.findUnique({ where: { customerId } });
+  if (!existing) {
+    throw new AppError(404, 'Customer not found');
+  }
+  return prisma.customer.update({
+    where: { customerId },
+    data: { role },
+    select: publicSelect,
+  });
 };
 
 export const getProfile = async (customerId: string) => {

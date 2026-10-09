@@ -5,6 +5,7 @@ export const createCustomerSchema = z.object({
   email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
   phone: z.string({ required_error: 'Phone is required' }).min(1, 'Phone is required'),
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  role: z.enum(['customer', 'staff', 'admin']).optional(),
 });
 
 export const updateCustomerSchema = z

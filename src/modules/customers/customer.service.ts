@@ -9,6 +9,7 @@ const publicSelect = {
   name: true,
   email: true,
   phone: true,
+  role: true,
   profileImage: true,
   createdAt: true,
   updatedAt: true,
@@ -26,7 +27,13 @@ export const createCustomer = async (data: CreateCustomerInput) => {
     ? await hashPassword(data.password)
     : await hashPassword(crypto.randomBytes(32).toString('hex'));
   return prisma.customer.create({
-    data: { name: data.name, email: data.email, phone: data.phone, password },
+    data: {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      password,
+      role: data.role ?? 'customer',
+    },
     select: publicSelect,
   });
 };

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as authController from './auth.controller';
-import authenticate from '../../middlewares/auth';
+import authenticate, { authorize } from '../../middlewares/auth';
 import { photoUpload } from '../../utils/upload';
 
 const router = Router();
@@ -15,5 +15,9 @@ router.put('/me', authenticate, authController.updateProfile);
 router.put('/me/photo', authenticate, photoUpload.single('photo'), authController.uploadProfilePhoto);
 router.delete('/me/photo', authenticate, authController.removeProfilePhoto);
 router.post('/change-password', authenticate, authController.changePassword);
+
+// Admin-only user management (customer / staff / admin roles)
+router.post('/users', authenticate, authorize('admin'), authController.createUser);
+router.patch('/users/:id/role', authenticate, authorize('admin'), authController.updateRole);
 
 export default router;

@@ -7,6 +7,9 @@ export const signupSchema = z.object({
   password: z
     .string({ required_error: 'Password is required' })
     .min(6, 'Password must be at least 6 characters'),
+  // Public signup always creates a customer. Staff/admin accounts
+  // are created by an admin via POST /api/auth/users.
+  role: z.enum(['customer']).optional(),
 });
 
 export const loginSchema = z.object({
@@ -41,9 +44,25 @@ export const resetPasswordSchema = z.object({
     .min(6, 'New password must be at least 6 characters'),
 });
 
+export const createUserSchema = z.object({
+  name: z.string({ required_error: 'Name is required' }).min(1, 'Name is required'),
+  email: z.string({ required_error: 'Email is required' }).email('Invalid email address'),
+  phone: z.string({ required_error: 'Phone is required' }).min(1, 'Phone is required'),
+  password: z
+    .string({ required_error: 'Password is required' })
+    .min(6, 'Password must be at least 6 characters'),
+  role: z.enum(['customer', 'staff', 'admin']).default('customer'),
+});
+
+export const updateRoleSchema = z.object({
+  role: z.enum(['customer', 'staff', 'admin'], { required_error: 'Role is required' }),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;

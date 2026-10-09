@@ -10,6 +10,8 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  createUserSchema,
+  updateRoleSchema,
 } from './auth.validation';
 import { AuthRequest } from '../../middlewares/auth';
 
@@ -118,5 +120,26 @@ export const resetPassword = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'Password reset successful. Please login with your new password.',
     data: null,
+  });
+});
+
+export const createUser = catchAsync(async (req: Request, res: Response) => {
+  const data = createUserSchema.parse(req.body);
+  const customer = await authService.createUser(data);
+  res.status(201).json({
+    success: true,
+    message: `User with role '${data.role}' created successfully`,
+    data: customer,
+  });
+});
+
+export const updateRole = catchAsync(async (req: Request, res: Response) => {
+  const { role } = updateRoleSchema.parse(req.body);
+  const customerId = (req.params as { id: string }).id;
+  const customer = await authService.updateRole(customerId, role);
+  res.status(200).json({
+    success: true,
+    message: `Role updated to '${role}' successfully`,
+    data: customer,
   });
 });

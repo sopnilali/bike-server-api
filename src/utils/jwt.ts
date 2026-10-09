@@ -11,9 +11,12 @@ const getSecret = (): string => {
   return secret;
 };
 
+export type UserRole = 'customer' | 'staff' | 'admin';
+
 export interface AuthTokenPayload {
   customerId: string;
   email: string;
+  role: UserRole;
 }
 
 export const signAuthToken = (payload: AuthTokenPayload): string => {

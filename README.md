@@ -99,10 +99,13 @@ Server: `http://localhost:5000` — health check `GET /`.
 
 ### Auth (customers log in with email + password)
 
+Roles: `customer` (default), `staff`, `admin`. JWT contains `role`.
+Public signup always creates `customer`.
+
 | Method | Endpoint | Auth | Description |
 | ------ | -------- | ---- | ----------- |
 | POST | `/api/auth/signup` | No | Signup (name, email, phone, password min 6) → customer + JWT |
-| POST | `/api/auth/login` | No | Login (email, password) → customer + JWT |
+| POST | `/api/auth/login` | No | Login (email, password) → customer + JWT (with role) |
 | GET | `/api/auth/me` | Bearer | Get own profile |
 | PUT | `/api/auth/me` | Bearer | Update own profile (name, phone) |
 | POST | `/api/auth/change-password` | Bearer | Change password (currentPassword, newPassword) |
@@ -110,6 +113,8 @@ Server: `http://localhost:5000` — health check `GET /`.
 | POST | `/api/auth/reset-password` | No | Reset password with token (token, newPassword) |
 | PUT | `/api/auth/me/photo` | Bearer | Upload/update profile photo (multipart `photo`: JPEG/PNG/WebP ≤ 5 MB, stored in S3) |
 | DELETE | `/api/auth/me/photo` | Bearer | Remove profile photo (also deletes S3 object) |
+| POST | `/api/auth/users` | Bearer + admin | Create user with any role (customer/staff/admin) |
+| PATCH | `/api/auth/users/:id/role` | Bearer + admin | Change user role |
 
 Send the JWT as `Authorization: Bearer <token>`. Set `JWT_SECRET` in `.env`
 (see `.env.example`). Forgot-password flow: `forgot-password` → copy
@@ -125,23 +130,25 @@ The S3 bucket is private, so photos are streamed through the API:
 
 ### Customers
 
-| Method | Endpoint | Description |
-| ------ | -------- | ----------- |
-| POST | `/api/customers` | Create customer |
-| GET | `/api/customers` | Get all customers |
-| GET | `/api/customers/:id` | Get customer by ID |
-| PUT | `/api/customers/:id` | Update customer |
-| DELETE | `/api/customers/:id` | Delete customer |
+| Method | Endpoint | Auth | Description |
+| ------ | -------- | ---- | ----------- |
+| POST | `/api/customers` | staff, admin | Create customer |
+| GET | `/api/customers` | staff, admin | Get all customers |
+| GET | `/api/customers/:id` | self / staff / admin | Get customer by ID |
+| PUT | `/api/customers/:id` | self / staff / admin | Update customer |
+| DELETE | `/api/customers/:id` | admin | Delete customer |
 
 ### Bikes
 
-| Method | Endpoint | Description |
-| ------ | -------- | ----------- |
-| POST | `/api/bikes` | Create bike |
-| GET | `/api/bikes` | Get all bikes |
-| GET | `/api/bikes/:id` | Get bike by ID |
+| Method | Endpoint | Auth | Description |
+| ------ | -------- | ---- | ----------- |
+| POST | `/api/bikes` | auth (customer: own only) | Create bike |
+| GET | `/api/bikes` | auth | Get all bikes |
+| GET | `/api/bikes/:id` | auth | Get bike by ID |
 
 ### Services
+
+Staff/admin only (all endpoints require Bearer + staff/admin):
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
