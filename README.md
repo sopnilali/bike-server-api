@@ -19,8 +19,9 @@ src/
   app.ts
   server.ts
   config/prisma.ts
-  middlewares/errorHandler.ts, notFound.ts
-  utils/AppError.ts, catchAsync.ts
+  middlewares/auth.ts, errorHandler.ts, notFound.ts
+  utils/AppError.ts, catchAsync.ts, jwt.ts, password.ts
+  modules/auth/
   modules/customers/
   modules/bikes/
   modules/services/
@@ -95,6 +96,22 @@ npm start
 Server: `http://localhost:5000` — health check `GET /`.
 
 ## API Endpoints
+
+### Auth (customers log in with email + password)
+
+| Method | Endpoint | Auth | Description |
+| ------ | -------- | ---- | ----------- |
+| POST | `/api/auth/signup` | No | Signup (name, email, phone, password min 6) → customer + JWT |
+| POST | `/api/auth/login` | No | Login (email, password) → customer + JWT |
+| GET | `/api/auth/me` | Bearer | Get own profile |
+| PUT | `/api/auth/me` | Bearer | Update own profile (name, phone) |
+| POST | `/api/auth/change-password` | Bearer | Change password (currentPassword, newPassword) |
+| POST | `/api/auth/forgot-password` | No | Get reset token by email (valid 1h, returned in response) |
+| POST | `/api/auth/reset-password` | No | Reset password with token (token, newPassword) |
+
+Send the JWT as `Authorization: Bearer <token>`. Set `JWT_SECRET` in `.env`
+(see `.env.example`). Forgot-password flow: `forgot-password` → copy
+`resetToken` → `reset-password` → login with the new password.
 
 ### Customers
 

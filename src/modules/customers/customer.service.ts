@@ -1,21 +1,44 @@
+import crypto from 'crypto';
 import prisma from '../../config/prisma';
 import AppError from '../../utils/AppError';
+import { hashPassword } from '../../utils/password';
 import { CreateCustomerInput, UpdateCustomerInput } from './customer.validation';
+
+const publicSelect = {
+  customerId: true,
+  name: true,
+  email: true,
+  phone: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 export const createCustomer = async (data: CreateCustomerInput) => {
   const existing = await prisma.customer.findUnique({ where: { email: data.email } });
   if (existing) {
     throw new AppError(409, 'Email already exists');
   }
-  return prisma.customer.create({ data });
+  // Password optional here for backward compatibility (e.g. admin-created
+  // records). Auth signup always supplies one. Fall back to an unusable
+  // random value so the NOT NULL column is satisfied.
+  const password = data.password
+    ? await hashPassword(data.password)
+    : await hashPassword(crypto.randomBytes(32).toString('hex'));
+  return prisma.customer.create({
+    data: { name: data.name, email: data.email, phone: data.phone, password },
+    select: publicSelect,
+  });
 };
 
 export const getAllCustomers = async () => {
-  return prisma.customer.findMany({ orderBy: { createdAt: 'desc' } });
+  return prisma.customer.findMany({ orderBy: { createdAt: 'desc' }, select: publicSelect });
 };
 
 export const getCustomerById = async (id: string) => {
-  const customer = await prisma.customer.findUnique({ where: { customerId: id } });
+  const customer = await prisma.customer.findUnique({
+    where: { customerId: id },
+    select: publicSelect,
+  });
   if (!customer) {
     throw new AppError(404, 'Customer not found');
   }
@@ -32,9 +55,11 @@ export const updateCustomer = async (id: string, data: UpdateCustomerInput) => {
     }
   }
 
+  const { password, ...rest } = data;
   return prisma.customer.update({
     where: { customerId: id },
-    data,
+    data: password ? { ...rest, password: await hashPassword(password) } : rest,
+    select: publicSelect,
   });
 };
 
