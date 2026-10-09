@@ -8,6 +8,7 @@ export interface AuthenticatedCustomer {
   name: string;
   email: string;
   phone: string;
+  profileImage: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +42,7 @@ const authenticate = async (req: AuthRequest, _res: Response, next: NextFunction
         name: true,
         email: true,
         phone: true,
+        profileImage: true,
         createdAt: true,
         updatedAt: true,
       },

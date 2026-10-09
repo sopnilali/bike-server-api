@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import AppError from '../../utils/AppError';
 import * as authService from './auth.service';
+import { uploadProfilePhoto as uploadPhotoToS3, deleteProfilePhotoByUrl } from '../../utils/upload';
 import {
   signupSchema,
   loginSchema,
@@ -54,6 +55,37 @@ export const updateProfile = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Profile updated successfully',
+    data: customer,
+  });
+});
+
+export const uploadProfilePhoto = catchAsync(async (req: Request, res: Response) => {
+  const customerId = requireUserId(req as AuthRequest);
+  const file = (req as AuthRequest & { file?: Express.Multer.File }).file;
+  if (!file) {
+    throw new AppError(400, 'Profile photo is required. Send multipart/form-data with field "photo".');
+  }
+  const photoUrl = await uploadPhotoToS3(customerId, file);
+  try {
+    const customer = await authService.updateProfilePhoto(customerId, photoUrl);
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      data: customer,
+    });
+  } catch (err) {
+    // Don't orphan the uploaded object if the DB update fails.
+    await deleteProfilePhotoByUrl(photoUrl);
+    throw err;
+  }
+});
+
+export const removeProfilePhoto = catchAsync(async (req: Request, res: Response) => {
+  const customerId = requireUserId(req as AuthRequest);
+  const customer = await authService.removeProfilePhoto(customerId);
+  res.status(200).json({
+    success: true,
+    message: 'Profile photo removed successfully',
     data: customer,
   });
 });

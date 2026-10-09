@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 import { ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 import AppError from '../utils/AppError';
@@ -11,6 +12,9 @@ const errorHandler = (err: unknown, _req: Request, res: Response, _next: NextFun
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
+  } else if (err instanceof multer.MulterError) {
+    statusCode = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 5 MB or smaller' : err.message;
   } else if (err instanceof ZodError) {
     statusCode = 400;
     message = err.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');

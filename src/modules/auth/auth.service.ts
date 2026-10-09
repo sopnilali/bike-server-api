@@ -3,6 +3,7 @@ import prisma from '../../config/prisma';
 import AppError from '../../utils/AppError';
 import { hashPassword, comparePassword } from '../../utils/password';
 import { signAuthToken } from '../../utils/jwt';
+import { deleteProfilePhotoByUrl } from '../../utils/upload';
 import {
   SignupInput,
   LoginInput,
@@ -20,6 +21,7 @@ const publicSelect = {
   name: true,
   email: true,
   phone: true,
+  profileImage: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -70,6 +72,40 @@ export const updateProfile = async (customerId: string, data: UpdateProfileInput
     data,
     select: publicSelect,
   });
+};
+
+export const updateProfilePhoto = async (customerId: string, photoUrl: string) => {
+  const existing = await prisma.customer.findUnique({ where: { customerId } });
+  if (!existing) {
+    throw new AppError(404, 'Customer not found');
+  }
+  const customer = await prisma.customer.update({
+    where: { customerId },
+    data: { profileImage: photoUrl },
+    select: publicSelect,
+  });
+  // Remove the previous object from storage (fire-and-forget, never fails update).
+  if (existing.profileImage && existing.profileImage !== photoUrl) {
+    await deleteProfilePhotoByUrl(existing.profileImage);
+  }
+  return customer;
+};
+
+export const removeProfilePhoto = async (customerId: string) => {
+  const existing = await prisma.customer.findUnique({ where: { customerId } });
+  if (!existing) {
+    throw new AppError(404, 'Customer not found');
+  }
+  if (!existing.profileImage) {
+    throw new AppError(400, 'No profile photo to remove');
+  }
+  const customer = await prisma.customer.update({
+    where: { customerId },
+    data: { profileImage: null },
+    select: publicSelect,
+  });
+  await deleteProfilePhotoByUrl(existing.profileImage);
+  return customer;
 };
 
 export const changePassword = async (customerId: string, data: ChangePasswordInput) => {

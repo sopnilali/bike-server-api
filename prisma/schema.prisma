@@ -23,6 +23,7 @@ model Customer {
   updatedAt  DateTime @updatedAt
   passwordResetToken   String?   @unique
   passwordResetExpires DateTime?
+  profileImage   String?
   bikes      Bike[]
 
   @@map("customers")

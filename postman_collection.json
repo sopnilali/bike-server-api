@@ -119,6 +119,33 @@
               "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"newsecret123\"\n}"
             }
           }
+        },
+        {
+          "name": "Upload profile photo",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": "{{baseUrl}}/api/auth/me/photo",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "photo", "type": "file", "src": [] }]
+            }
+          }
+        },
+        {
+          "name": "Remove profile photo",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": "{{baseUrl}}/api/auth/me/photo"
+          }
+        },
+        {
+          "name": "View profile photo",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/files/profile/{{customerId}}"
+          }
         }
       ]
     },

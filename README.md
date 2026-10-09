@@ -108,10 +108,20 @@ Server: `http://localhost:5000` — health check `GET /`.
 | POST | `/api/auth/change-password` | Bearer | Change password (currentPassword, newPassword) |
 | POST | `/api/auth/forgot-password` | No | Get reset token by email (valid 1h, returned in response) |
 | POST | `/api/auth/reset-password` | No | Reset password with token (token, newPassword) |
+| PUT | `/api/auth/me/photo` | Bearer | Upload/update profile photo (multipart `photo`: JPEG/PNG/WebP ≤ 5 MB, stored in S3) |
+| DELETE | `/api/auth/me/photo` | Bearer | Remove profile photo (also deletes S3 object) |
 
 Send the JWT as `Authorization: Bearer <token>`. Set `JWT_SECRET` in `.env`
 (see `.env.example`). Forgot-password flow: `forgot-password` → copy
 `resetToken` → `reset-password` → login with the new password.
+
+### Files (profile photo display)
+
+The S3 bucket is private, so photos are streamed through the API:
+
+| Method | Endpoint | Auth | Description |
+| ------ | -------- | ---- | ----------- |
+| GET | `/api/files/profile/:customerId` | No | Stream customer's profile photo (404 if none) |
 
 ### Customers
 
